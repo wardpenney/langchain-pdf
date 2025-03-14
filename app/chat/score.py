@@ -1,4 +1,26 @@
+import random
 from app.chat.redis import client
+
+def random_component_by_score(component_type, component_map):
+  values = client.hgetall(f"{component_type}_score_values")
+  counts = client.hgetall(f"{component_type}_score_counts")
+
+  names = component_map.keys()
+
+  avg_scores = {}
+  for name in names:
+    score = int(values.get(name, 1))
+    count = int(counts.get(name, 1))
+    avg_scores[name] = max(min(score / count, 1), 0.1)
+
+  sum_scores = sum(avg_scores.values())
+  random_val = random.uniform(0, sum_scores)
+
+  cumulative_score = 0
+  for name, score in avg_scores.items():
+    cumulative_score += score
+    if random_val <= cumulative_score:
+      return name
 
 def score_conversation(
     conversation_id: str, score: float, llm: str, retriever: str, memory: str
