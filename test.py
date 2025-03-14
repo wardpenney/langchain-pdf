@@ -26,7 +26,7 @@ prompt = ChatPromptTemplate.from_messages([
   ("human", "{content}")
 ])
 
-class StreamingChain(LLMChain):
+class StreamableChain:
   def stream(self, input: dict):
     queue = Queue()
     handler = StreamingHandler(queue)
@@ -43,6 +43,9 @@ class StreamingChain(LLMChain):
         break
 
       yield token
+
+class StreamingChain(StreamableChain, LLMChain):
+  pass
 
 chain = StreamingChain(llm=chat, prompt=prompt)
 
